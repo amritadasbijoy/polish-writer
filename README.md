@@ -20,13 +20,24 @@ Select text anywhere (Chrome, Slack, Mail, Word, Notes, WhatsApp, the Claude app
 - **History** — your last 50 results, one click to copy again.
 - **Works with any OpenAI-compatible API** — OpenAI, DeepSeek, OpenRouter, Groq, River, or a local model with Ollama.
 
-## Requirements
+## ⬇️ Download (easiest)
+
+**[Download Polish Writer for Mac (.dmg)](https://github.com/amritadasbijoy/polish-writer/releases/latest)** — no Terminal, no setup files.
+
+1. Open the DMG and drag **Polish Writer** to **Applications**.
+2. In Applications, **right-click Polish Writer → Open**, then click **Open** again. (Only the first time — the app is free and not registered with Apple, so macOS asks once. If it still refuses: System Settings → Privacy & Security → **Open Anyway**.)
+3. The **Settings** window opens: allow Accessibility, pick your AI provider, paste your API key, **Test connection**, **Save**.
+4. Select text anywhere → press **⌥ Space** or click **✨**.
+
+Polish Writer lives in your menu bar (✍︎) and starts automatically when you log in. Prefer to run it inside your own Hammerspoon setup? See the script install below.
+
+## Requirements (script install)
 
 - macOS 12 or newer
 - [Hammerspoon](https://www.hammerspoon.org) (free, open source — the installer can install it for you)
 - An API key from any OpenAI-compatible provider (or Ollama running locally)
 
-## Install
+## Install with the script (for Hammerspoon users)
 
 1. **Download** this repository: click **Code → Download ZIP**, then unzip it. (Or `git clone` it.)
 2. Open **Terminal**, go to the folder and run the installer:
@@ -36,8 +47,7 @@ Select text anywhere (Chrome, Slack, Mail, Word, Notes, WhatsApp, the Claude app
    ```
    It installs Hammerspoon if needed (using Homebrew), copies Polish Writer into `~/.hammerspoon/polish`, and starts it. It does not touch anything else in your Hammerspoon setup.
 3. **Allow Accessibility:** System Settings → Privacy & Security → Accessibility → turn on **Hammerspoon**. (Needed so it can copy your selection and paste the result.)
-4. **Choose your AI provider:** click **✍︎** in the menu bar → **Edit settings…** → set `baseURL` and `model` → save → **✍︎ → Reload**.
-5. **Add your API key:** **✍︎ → Set API key…** → paste → Save. Then **✍︎ → Test connection**.
+4. **Finish setup in the Settings window** (opens automatically, or **✍︎ → Settings…**): pick your AI provider and model, paste your API key, **Test connection**, **Save**.
 
 ### Provider settings
 
@@ -61,7 +71,7 @@ Model names change often — copy the exact model ID from your provider's dashbo
    ```lua
    require("polish")
    ```
-5. Hammerspoon menu → Reload Config. Then do steps 3–5 above.
+5. Hammerspoon menu → Reload Config. Then do steps 3–4 above.
 
 ## How to use
 
@@ -78,7 +88,9 @@ Model names change often — copy the exact model ID from your provider's dashbo
 
 Nothing is ever sent or posted for you — Polish Writer only replaces the text you selected. You still press Send.
 
-## Settings (`~/.hammerspoon/polish/config.lua`)
+## Advanced settings (config file)
+
+Most things are in **✍︎ → Settings…**. For the rest, use **✍︎ → Advanced: edit config file…**:
 
 - `aboutMe` — one line about who you are and who you write to (e.g. *"a designer writing to clients"*). Makes rewrites sound right.
 - `spelling` — `"US"` or `"UK"`.
@@ -104,10 +116,15 @@ After editing, choose **✍︎ → Reload**.
 
 ## Uninstall
 
+- **App (DMG) version:** quit it from **✍︎ → Quit Polish Writer**, then drag **Polish Writer** from Applications to the Trash.
+- **Script version:** run `bash uninstall.sh` — removes Polish Writer and its Keychain entry; Hammerspoon stays installed.
+
+## Build the DMG yourself
+
 ```bash
-bash uninstall.sh
+brew install --cask hammerspoon     # the app is built from Hammerspoon
+bash scripts/build-dmg.sh 1.0.0     # creates dist/Polish Writer.app and dist/Polish-Writer-1.0.0.dmg
 ```
-Removes Polish Writer and its Keychain entry; Hammerspoon stays installed.
 
 ## About the developer
 

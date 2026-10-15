@@ -54,11 +54,11 @@ open -a Hammerspoon
 
 cat <<'EOF'
 
-✓ Done. Three things left (one time only):
+✓ Done. Two things left (one time only):
 
   1. Allow Accessibility:  System Settings → Privacy & Security → Accessibility → turn on Hammerspoon
-  2. Pick your AI provider: click ✍︎ in the menu bar → Edit settings… → set baseURL + model → save → ✍︎ → Reload
-  3. Add your API key:      ✍︎ → Set API key…   then  ✍︎ → Test connection
+  2. In the Settings window that opens (or ✍︎ → Settings…): pick your AI provider, paste your API key,
+     click Test connection, then Save.
 
 Then select text in any app and press ⌥ Space (or click the ✨ button).
 EOF
