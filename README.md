@@ -109,6 +109,16 @@ bash uninstall.sh
 ```
 Removes Polish Writer and its Keychain entry; Hammerspoon stays installed.
 
+## About the developer
+
+Polish Writer is built and maintained by **Amrita Chandra Das** — a Top Rated Plus freelance video editor and the founder of VideoCutStudio, who built this tool to write clearer messages to clients every day.
+
+- 🌐 Portfolio: [amrita.bd](https://amrita.bd)
+- 🎬 Studio: [videocutstudio.com](https://videocutstudio.com)
+- 💼 LinkedIn: [linkedin.com/in/amritabijoy](https://www.linkedin.com/in/amritabijoy/)
+
+Found a bug or have an idea? [Open an issue](https://github.com/amritadasbijoy/polish-writer/issues). If Polish Writer saves you time, a ⭐ on this repo helps others find it.
+
 ## License
 
 [MIT](LICENSE) © 2026 Amrita Chandra Das

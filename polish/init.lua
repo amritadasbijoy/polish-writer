@@ -1,6 +1,7 @@
 -- Polish Writer — proofread and rewrite text in any Mac app, with your own AI API key.
 -- Loaded from ~/.hammerspoon/init.lua with:   require("polish")
--- https://github.com/  (see README.md)
+-- https://github.com/amritadasbijoy/polish-writer
+-- Made by Amrita Chandra Das — https://amrita.bd · https://videocutstudio.com · https://www.linkedin.com/in/amritabijoy/
 
 local POLISH_DIR = hs.configdir .. "/polish"
 
@@ -136,6 +137,16 @@ local function buildMenu()
     { title = "History", menu = hist },
     { title = "Ignore list", menu = ign },
     { title = "Try it on a sample sentence", fn = function() panel.showFor(SAMPLE, nil, "proofread", nil, false) end },
+    { title = "-" },
+    { title = "About Polish Writer", menu = {
+        { title = "Polish Writer — made by Amrita Chandra Das", disabled = true },
+        { title = "-" },
+        { title = "Portfolio — amrita.bd",           fn = function() hs.urlevent.openURL("https://amrita.bd") end },
+        { title = "VideoCutStudio — videocutstudio.com", fn = function() hs.urlevent.openURL("https://videocutstudio.com") end },
+        { title = "LinkedIn — Amrita Chandra Das",   fn = function() hs.urlevent.openURL("https://www.linkedin.com/in/amritabijoy/") end },
+        { title = "-" },
+        { title = "GitHub — updates, help and source", fn = function() hs.urlevent.openURL("https://github.com/amritadasbijoy/polish-writer") end },
+    } },
     { title = "-" },
     { title = "Set API key…",    fn = setKeyDialog },
     { title = "Edit settings…",  fn = editSettings },
