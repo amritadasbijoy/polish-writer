@@ -79,7 +79,7 @@ ditto "$APP" "$STAGE/Polish Writer.app"
 ln -s /Applications "$STAGE/Applications"
 cp "$ROOT/app/First time - how to open.txt" "$STAGE/"
 DMG="$OUT/Polish-Writer-$VERSION.dmg"
-hdiutil create -volname "Polish Writer" -srcfolder "$STAGE" -ov -format UDZO "$DMG" >/dev/null
+hdiutil create -volname "Polish Writer" -srcfolder "$STAGE" -ov -format ULMO "$DMG" >/dev/null
 rm -rf "$TMP"
 
 echo "✓ App: $APP"
