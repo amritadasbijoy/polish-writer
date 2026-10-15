@@ -1,0 +1,5 @@
+# personal settings and local files — never commit these
+polish/config.lua
+polish/.log
+polish/.status
+.DS_Store

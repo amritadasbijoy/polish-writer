@@ -1,0 +1,299 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+:root{--bg:#ffffff;--soft:#f4f4f2;--line:#e2e1dc;--text:#1f1f1d;--muted:#73726c;--accent:#2f6fd0;--accent-bg:#e6effb;--add-bg:#e3f2d9;--add:#2f6a10;--del:#b23a3a;--btn:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#232322;--soft:#2c2c2a;--line:#3d3d3a;--text:#ecebe6;--muted:#a3a29c;--accent:#7fb0f0;--accent-bg:#1e3350;--add-bg:#25401a;--add:#b7e08f;--del:#f09595;--btn:#2c2c2a}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px/1.55 -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;-webkit-user-select:none}
+body{display:flex;flex-direction:column}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px 8px}
+.chip{border:1px solid var(--line);background:var(--btn);color:var(--muted);border-radius:7px;padding:3px 10px;font-size:12.5px;cursor:pointer}
+.chip.on{background:var(--accent-bg);border-color:transparent;color:var(--accent)}
+.chip kbd{font:inherit;opacity:.55;margin-left:4px}
+.label{font-size:11.5px;color:var(--muted);padding:0 14px 4px;display:flex;justify-content:space-between}
+.label a{color:var(--accent);cursor:pointer;text-decoration:none}
+#out{flex:1;margin:0 14px;padding:10px 12px;background:var(--soft);border-radius:8px;overflow:auto;white-space:pre-wrap;-webkit-user-select:text;min-height:80px}
+#out.loading{color:var(--muted)}
+#out.error{color:var(--del)}
+del{color:var(--del);text-decoration:line-through;opacity:.8;-webkit-user-select:none;user-select:none}
+#partbtn{position:fixed;display:none;z-index:5;font-size:12px;padding:3px 9px;background:var(--accent);color:#fff;border:none;border-radius:6px}
+@media (prefers-color-scheme:dark){#partbtn{color:#10223a}}
+#alts{position:fixed;left:14px;right:14px;display:none;z-index:6;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+#alts .hd{font-size:11.5px;color:var(--muted);display:flex;justify-content:space-between;padding:0 4px 6px}
+#alts .hd a{color:var(--accent);cursor:pointer}
+#alts .alt{padding:7px 9px;border-radius:7px;cursor:pointer;font-size:13.5px}
+#alts .alt:hover,#alts .alt.on{background:var(--accent-bg)}
+#alts .alt b{font-weight:500;color:var(--muted);margin-right:6px}
+mark{background:var(--accent-bg);color:inherit;border-radius:3px}
+.iss{border-bottom:2px solid var(--del);cursor:pointer;border-radius:2px}
+.iss.t-clarity{border-bottom-color:var(--accent)}
+.iss:hover,.iss.sel{background:rgba(226,75,74,.16)}
+.iss.t-clarity:hover,.iss.t-clarity.sel{background:var(--accent-bg)}
+.fixed{background:var(--add-bg);color:var(--add);border-radius:3px;padding:0 1px;cursor:pointer}
+#card{position:fixed;display:none;z-index:7;width:290px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+#card .ty{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--del);margin-bottom:4px}
+#card .ty.t-clarity{color:var(--accent)}
+#card .chg{font-size:14px;margin-bottom:4px}
+#card .chg s{color:var(--muted)}
+#card .chg b{font-weight:500;background:var(--add-bg);color:var(--add);border-radius:3px;padding:0 3px}
+#card .why{font-size:12px;color:var(--muted);margin-bottom:9px}
+#card .btns{display:flex;gap:6px}
+#card button{font-size:12px;padding:3px 10px}
+/* ---- small inline popup (Fix mistakes) ---- */
+body.mini, html:has(body.mini){height:auto}
+body.mini{display:block;overflow:hidden}
+body.mini .chips, body.mini #extra, body.mini #retry, body.mini #copy, body.mini #partbtn{display:none!important}
+body.mini .label{padding:10px 14px 6px;font-size:12px}
+body.mini #out{max-height:230px;min-height:0;margin:0 14px;font-size:14px}
+body.mini #card{position:static!important;width:auto;margin:8px 14px 0;box-shadow:none;background:var(--soft)}
+body.mini .foot{padding:8px 14px 10px}
+#more{display:none;margin-left:10px}
+body.mini #more{display:inline}
+ins{background:var(--add-bg);color:var(--add);text-decoration:none;border-radius:3px;padding:0 1px}
+#extra{margin:8px 14px 0;width:calc(100% - 28px);border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:7px;padding:6px 9px;font:inherit;font-size:13px;outline:none;-webkit-user-select:text}
+#extra:focus{border-color:var(--accent)}
+.foot{display:flex;align-items:center;gap:8px;padding:10px 14px}
+#status{flex:1;font-size:12px;color:var(--muted)}
+button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--btn);color:var(--text);border-radius:7px;padding:5px 11px;cursor:pointer}
+button.primary{background:var(--accent);border-color:transparent;color:#fff}
+@media (prefers-color-scheme:dark){button.primary{color:#10223a}}
+button:disabled{opacity:.45;cursor:default}
+#out.opts{background:transparent;padding:0;display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;gap:10px;align-items:flex-start;background:var(--soft);border:1.5px solid transparent;border-radius:8px;padding:9px 11px;cursor:pointer;-webkit-user-select:none}
+.opt.on{border-color:var(--accent);background:var(--accent-bg)}
+.opt .num{flex:none;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);font-size:11.5px;display:flex;align-items:center;justify-content:center;color:var(--muted);margin-top:1px}
+.opt.on .num{background:var(--accent);border-color:transparent;color:var(--bg)}
+</style></head>
+<body tabindex="-1">
+<div class="chips" id="chips"></div>
+<div class="label"><span id="lbl">Changes</span><span><a id="toggle">Show clean text</a><a id="more">More ▸</a></span></div>
+<div id="out" class="loading">Working…</div>
+<button id="partbtn">✨ Rewrite this part</button>
+<div id="alts"></div>
+<div id="card"></div>
+<input id="extra" placeholder="Custom instruction (optional), then press Return — e.g. make it sound confident">
+<div class="foot">
+  <span id="status"></span>
+  <button id="retry">Retry</button>
+  <button id="copy">Copy</button>
+  <button id="replace" class="primary">Replace ⏎</button>
+</div>
+<script>
+const MODES=[["proofread","Fix mistakes"],["rewrite","Rewrite"],["shorter","Shorter"],["friendly","Friendlier"],["translate","To English"]];
+const S={mode:"proofread",original:"",result:"",busy:false,clean:false};
+const $=id=>document.getElementById(id);
+const send=(action,data={})=>window.webkit.messageHandlers.polish.postMessage(Object.assign({action},data));
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+function chips(){ $("chips").innerHTML=MODES.map((m,i)=>`<span class="chip${m[0]===S.mode?" on":""}" data-m="${m[0]}">${m[1]}<kbd>⌘${i+1}</kbd></span>`).join("");
+  document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>run(c.dataset.m)); }
+
+function tokens(s){return s.match(/\s+|[A-Za-z0-9'’ঀ-৿]+|[^\sA-Za-z0-9'’ঀ-৿]/g)||[]}
+function diff(a,b){
+  const A=tokens(a),B=tokens(b),n=A.length,m=B.length;
+  if(n*m>2000000) return null;
+  const L=Array.from({length:n+1},()=>new Uint16Array(m+1));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)L[i][j]=A[i]===B[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+  let i=0,j=0,html="",d="",ad="",changes=0;
+  const flush=()=>{ if(d.trim()||ad.trim())changes++; if(d)html+=`<del>${esc(d)}</del>`; if(ad)html+=`<ins>${esc(ad)}</ins>`; d="";ad=""; };
+  while(i<n&&j<m){ if(A[i]===B[j]){flush();html+=esc(A[i]);i++;j++;} else if(L[i+1][j]>=L[i][j+1]){d+=A[i++];} else {ad+=B[j++];} }
+  while(i<n)d+=A[i++]; while(j<m)ad+=B[j++]; flush();
+  return {html,changes};
+}
+
+function renderOptions(){
+  const out=$("out"); out.className="opts";
+  out.innerHTML=S.options.map((o,i)=>`<div class="opt${i===S.pick?" on":""}" data-i="${i}"><span class="num">${i+1}</span><span>${esc(o)}</span></div>`).join("");
+  out.querySelectorAll(".opt").forEach(el=>{
+    el.onclick=()=>pick(+el.dataset.i);
+    el.ondblclick=()=>{pick(+el.dataset.i);$("replace").click();};
+  });
+  $("lbl").textContent="Pick one — press 1, 2 or 3"; $("toggle").textContent="";
+  $("status").textContent=`${S.options.length} options`;
+}
+function pick(i){ if(!S.options||i<0||i>=S.options.length)return; S.pick=i; S.result=S.options[i]; renderOptions(); }
+
+// ---------- Grammarly-style check view ----------
+const LABEL={spelling:"Spelling",grammar:"Grammar",punctuation:"Punctuation",clarity:"Clarity"};
+function locateIssues(text,issues){
+  const out=[]; let cursor=0;
+  for(const it of issues){
+    let at=text.indexOf(it.wrong,cursor); if(at<0) at=text.indexOf(it.wrong);
+    if(at<0) continue;
+    if(out.some(o=>at<o.start+o.len&&o.start<at+it.wrong.length)) continue;   // overlaps another
+    out.push({start:at,len:it.wrong.length,wrong:it.wrong,fix:it.fix,type:(it.type||"grammar").toLowerCase(),why:it.why||"",state:"open"});
+    cursor=at+it.wrong.length;
+  }
+  return out.sort((a,b)=>a.start-b.start);
+}
+function checkText(){ let t="",p=0; for(const it of S.check){ t+=S.original.slice(p,it.start)+(it.state==="ok"?it.fix:it.wrong); p=it.start+it.len; } return t+S.original.slice(p); }
+function openCount(){ return S.check.filter(i=>i.state==="open").length; }
+function renderCheck(){
+  const out=$("out"); out.className="check"; let h="",p=0;
+  S.check.forEach((it,i)=>{
+    h+=esc(S.original.slice(p,it.start));
+    if(it.state==="open") h+=`<span class="iss t-${it.type}${S.cardI===i?" sel":""}" data-i="${i}">${esc(it.wrong)}</span>`;
+    else if(it.state==="ok") h+=`<span class="fixed" data-i="${i}" title="Click to undo">${esc(it.fix)}</span>`;
+    else h+=esc(it.wrong);
+    p=it.start+it.len;
+  });
+  out.innerHTML=h+esc(S.original.slice(p));
+  out.querySelectorAll(".iss").forEach(el=>el.onclick=e=>{e.stopPropagation();openCard(+el.dataset.i);});
+  out.querySelectorAll(".fixed").forEach(el=>el.onclick=e=>{e.stopPropagation();S.check[+el.dataset.i].state="open";S.result=checkText();renderCheck();});
+  const n=openCount(), done=S.check.filter(i=>i.state==="ok").length;
+  $("lbl").textContent=!S.check.length?"No mistakes found ✓":n?`${n} mistake${n>1?"s":""} — click an underline to fix`:"All done ✓";
+  $("toggle").textContent=n>1?`Accept all (${n})`:"";
+  $("status").textContent=S.check.length?`${done} fixed · ${n} left`:"Looks good ✓";
+  if(S.mini){ $("lbl").textContent=!S.check.length?"No mistakes found ✓":n?`${n} mistake${n>1?"s":""} — click to fix`:"All fixed ✓"; }
+  fit();
+}
+function fit(){ if(!S.mini) return; requestAnimationFrame(()=>send("resize",{h:Math.ceil(document.body.getBoundingClientRect().height)})); }
+function closeCard(){ $("card").style.display="none"; S.cardI=null; document.querySelectorAll(".iss.sel").forEach(e=>e.classList.remove("sel")); fit(); }
+function openCard(i){
+  const it=S.check[i]; if(!it||it.state!=="open") return;
+  S.cardI=i; renderCheck();
+  const el=document.querySelector(`.iss[data-i="${i}"]`); const r=el.getBoundingClientRect(); const c=$("card");
+  c.innerHTML=`<div class="ty t-${it.type}">${LABEL[it.type]||"Grammar"}</div>
+    <div class="chg"><s>${esc(it.wrong)}</s> → <b>${esc(it.fix)||"(remove)"}</b></div>
+    ${it.why?`<div class="why">${esc(it.why)}</div>`:""}
+    <div class="btns"><button class="primary" id="cAcc">Accept ⏎</button><button id="cDis">Dismiss</button>${it.type==="spelling"?`<button id="cIgn" title="Never flag this word again">Ignore word</button>`:""}</div>`;
+  c.style.display="block";
+  const left=Math.min(Math.max(r.left,10),window.innerWidth-300);
+  let top=r.bottom+6; if(top+c.offsetHeight>window.innerHeight-8) top=Math.max(r.top-c.offsetHeight-6,8);
+  c.style.left=left+"px"; c.style.top=top+"px";
+  $("cAcc").onclick=()=>decide(i,"ok"); $("cDis").onclick=()=>decide(i,"no");
+  if($("cIgn")) $("cIgn").onclick=()=>{ const w=it.wrong.trim(); send("ignore",{word:w});
+    S.check.forEach(x=>{ if(x.state==="open"&&x.wrong.trim().toLowerCase()===w.toLowerCase()) x.state="no"; }); decide(i,"no"); };
+  fit();
+}
+function decide(i,state){
+  S.check[i].state=state; S.result=checkText(); closeCard(); renderCheck();
+  const next=S.check.findIndex((x,j)=>j>i&&x.state==="open"); const any=S.check.findIndex(x=>x.state==="open");
+  const n=next>=0?next:any; if(n>=0) setTimeout(()=>openCard(n),120);
+}
+function acceptAll(){ S.check.forEach(x=>{ if(x.state==="open") x.state="ok"; }); S.result=checkText(); closeCard(); renderCheck(); }
+document.addEventListener("click",e=>{ if(S.cardI!=null&&!$("card").contains(e.target)) closeCard(); });
+
+function render(){
+  if(S.check){ renderCheck(); return; }
+  if(S.options){ renderOptions(); return; }
+  const out=$("out"); out.className="";
+  if(S.clean||S.mode==="translate"){ out.textContent=S.result; $("lbl").textContent="Result"; $("toggle").textContent=S.mode==="translate"?"":"Show changes"; return; }
+  const d=diff(S.original,S.result);
+  if(!d){ out.textContent=S.result; $("lbl").textContent="Result (too long to show changes)"; return; }
+  out.innerHTML=d.html; $("lbl").textContent=d.changes?"Changes":"No changes needed"; $("toggle").textContent="Show clean text";
+  $("status").textContent=d.changes?`${d.changes} change${d.changes>1?"s":""}`:"Looks good ✓";
+}
+
+function setBusy(b){ S.busy=b; ["retry","copy","replace"].forEach(id=>$(id).disabled=b); }
+
+function run(mode){
+  if(mode) S.mode=mode; chips(); setBusy(true); if(typeof hidePart==="function") hidePart();
+  S.check=null; if(typeof closeCard==="function") closeCard();
+  const out=$("out"); out.className="loading"; out.textContent=S.mini?"Checking…":"Working…"; $("status").textContent="";
+  if(S.mini){ $("lbl").textContent="Fix mistakes"; $("toggle").textContent=""; }
+  S.t0=Date.now(); send("run",{mode:S.mode,extra:$("extra").value}); fit();
+}
+function setMini(on){ S.mini=on; document.body.classList.toggle("mini",on); $("replace").textContent=on?"Apply ⏎":"Replace ⏎"; }
+$("more").onclick=()=>{ setMini(false); send("full"); setTimeout(render,60); };
+
+window.Polish={
+  open(d){ S.original=d.text; S.mode=d.mode||"proofread"; S.clean=false; S.ctx=d.ctx||""; setMini(!!d.mini); $("extra").value=""; $("extra").blur(); document.body.focus(); run(); },
+  result(d){ setBusy(false);
+    if(!d.ok){ const o=$("out"); o.className="error"; o.textContent=d.text; $("status").textContent=""; $("copy").disabled=true; $("replace").disabled=true; fit(); return; }
+    S.check=null; S.options=(d.options&&d.options.length>1)?d.options:null; S.pick=0;
+    S.result=d.text; render(); $("status").textContent+=` · ${((Date.now()-S.t0)/1000).toFixed(1)}s`+(S.ctx?` · ${S.ctx} style`:""); },
+  checkResult(d){ setBusy(false); S.options=null;
+    const list=Array.isArray(d.issues)?d.issues:[];
+    S.check=locateIssues(S.original,list); S.cardI=null; S.result=checkText(); render();
+    $("status").textContent+=` · ${((Date.now()-S.t0)/1000).toFixed(1)}s`;
+    if(S.check.length) setTimeout(()=>openCard(0),150);
+    else if(S.mini) setTimeout(()=>send("close"),1400); }
+};
+
+// ---------- Rewrite this part ----------
+const P={part:"",start:-1,alts:null,pick:0};
+function hidePart(){ $("partbtn").style.display="none"; $("alts").style.display="none"; P.alts=null; }
+function findInResult(sel){
+  let i=S.result.indexOf(sel); if(i>=0) return {start:i,len:sel.length};
+  const words=sel.trim().split(/\s+/).map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));
+  if(!words.length) return null;
+  const m=new RegExp(words.join("\\s+")).exec(S.result);
+  return m?{start:m.index,len:m[0].length}:null;
+}
+$("out").addEventListener("mouseup",()=>{
+  setTimeout(()=>{
+    if(S.busy||S.options||S.check||!S.result) return;
+    const s=window.getSelection(); const txt=s?s.toString():"";
+    if(!txt.trim()||!$("out").contains(s.anchorNode)){ if(!P.alts) $("partbtn").style.display="none"; return; }
+    const loc=findInResult(txt.trim()); if(!loc){ $("partbtn").style.display="none"; return; }
+    P.part=S.result.substr(loc.start,loc.len); P.start=loc.start;
+    const r=s.getRangeAt(0).getBoundingClientRect(); const b=$("partbtn");
+    b.style.display="block";
+    b.style.left=Math.min(Math.max(r.left,14),window.innerWidth-160)+"px";
+    b.style.top=Math.max(r.top-28,4)+"px";
+  },10);
+});
+function showAlts(html,top){ const a=$("alts"); a.innerHTML=html; a.style.display="block";
+  a.style.top=Math.min(top,window.innerHeight-a.offsetHeight-8)+"px"; }
+$("partbtn").onmousedown=e=>e.preventDefault();
+$("partbtn").onclick=()=>{
+  const top=parseFloat($("partbtn").style.top)+30; $("partbtn").style.display="none";
+  P.alts=[]; showAlts(`<div class="hd"><span>Rewriting: “${esc(P.part.length>60?P.part.slice(0,60)+"…":P.part)}”</span><a id="altx">Cancel</a></div><div class="alt">Working…</div>`,top);
+  $("altx").onclick=hidePart; P.top=top;
+  send("part",{part:P.part,full:S.result,extra:$("extra").value});
+};
+function renderAlts(){
+  showAlts(`<div class="hd"><span>Pick a new version — 1, 2, 3 or click</span><a id="altx">Cancel</a></div>`+
+    P.alts.map((t,i)=>`<div class="alt${i===P.pick?" on":""}" data-i="${i}"><b>${i+1}</b>${esc(t)}</div>`).join(""),P.top);
+  $("altx").onclick=hidePart;
+  document.querySelectorAll("#alts .alt").forEach(el=>el.onclick=()=>applyAlt(+el.dataset.i));
+}
+function applyAlt(i){
+  const t=P.alts[i]; if(t==null) return;
+  S.result=S.result.slice(0,P.start)+t+S.result.slice(P.start+P.part.length);
+  hidePart(); window.getSelection().removeAllRanges(); render();
+  $("status").textContent+=" · part rewritten";
+}
+Polish.partResult=d=>{
+  if(!P.alts) return;
+  if(!d.ok){ showAlts(`<div class="hd"><span style="color:var(--del)">${esc(d.text||"Error")}</span><a id="altx">Close</a></div>`,P.top); $("altx").onclick=hidePart; return; }
+  P.alts=d.options||[]; P.pick=0; renderAlts();
+};
+
+$("toggle").onclick=()=>{ if(S.check){ acceptAll(); return; } S.clean=!S.clean; render(); };
+$("retry").onclick=()=>run();
+$("copy").onclick=()=>!S.busy&&S.result&&send("copy",{text:S.result,mode:S.mode});
+$("replace").onclick=()=>!S.busy&&S.result&&send("replace",{text:S.result,mode:S.mode});
+$("extra").addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();e.stopPropagation();run();} });
+document.addEventListener("keydown",e=>{
+  if(S.check&&document.activeElement!==$("extra")){
+    if(S.cardI!=null){
+      if(e.key==="Enter"){e.preventDefault();decide(S.cardI,"ok");return;}
+      if(e.key==="Escape"){e.preventDefault();closeCard();return;}
+      if(e.key==="Backspace"||e.key==="Delete"){e.preventDefault();decide(S.cardI,"no");return;}
+    }
+    if(e.key==="Tab"){e.preventDefault();const from=S.cardI==null?-1:S.cardI;
+      const n=S.check.findIndex((x,j)=>j>from&&x.state==="open"); const a=S.check.findIndex(x=>x.state==="open");
+      if(n>=0)openCard(n); else if(a>=0)openCard(a); return;}
+  }
+  if(P.alts&&P.alts.length&&document.activeElement!==$("extra")){
+    if(e.key==="Escape"){e.preventDefault();hidePart();return;}
+    if(/^[1-9]$/.test(e.key)){e.preventDefault();applyAlt(+e.key-1);return;}
+    if(e.key==="Enter"){e.preventDefault();applyAlt(P.pick);return;}
+    if(e.key==="ArrowDown"){e.preventDefault();P.pick=Math.min(P.pick+1,P.alts.length-1);renderAlts();return;}
+    if(e.key==="ArrowUp"){e.preventDefault();P.pick=Math.max(P.pick-1,0);renderAlts();return;}
+  }
+  if(e.key==="Escape"&&(P.alts||$("partbtn").style.display==="block")){e.preventDefault();hidePart();return;}
+  if(e.key==="Enter"&&P.alts){e.preventDefault();return;}   // still working on the part
+  if(e.key==="Escape"){e.preventDefault();send("close");}
+  else if(e.key==="Enter"&&document.activeElement!==$("extra")){e.preventDefault();$("replace").click();}
+  else if(e.metaKey&&/^[1-5]$/.test(e.key)){e.preventDefault();run(MODES[+e.key-1][0]);}
+  else if(S.options&&document.activeElement!==$("extra")){
+    if(/^[1-9]$/.test(e.key)){e.preventDefault();pick(+e.key-1);}
+    else if(e.key==="ArrowDown"){e.preventDefault();pick(Math.min(S.pick+1,S.options.length-1));}
+    else if(e.key==="ArrowUp"){e.preventDefault();pick(Math.max(S.pick-1,0));}
+  }
+});
+chips();
+</script></body></html>
