@@ -11,16 +11,6 @@ local ITEMS = {
   { "friendly",  "Friendlier" },
   { "translate", "Any language → English" },
 }
--- Apps where we can't reliably ask "is text selected?", so we always show the button
-local ALWAYS_SHOW = {
-  ["com.google.Chrome"] = true, ["com.apple.Safari"] = true, ["com.microsoft.edgemac"] = true,
-  ["company.thebrowser.Browser"] = true, ["com.brave.Browser"] = true, ["org.mozilla.firefox"] = true,
-  ["com.microsoft.Word"] = true, ["com.microsoft.Powerpoint"] = true, ["com.microsoft.Excel"] = true,
-  ["com.microsoft.Outlook"] = true,
-  ["com.anthropic.claudefordesktop"] = true, ["com.tinyspeck.slackmacgap"] = true,
-  ["net.whatsapp.WhatsApp"] = true, ["ru.keepcoder.Telegram"] = true, ["com.tdesktop.Telegram"] = true,
-}
-
 local canvas, fadeTimer, tap
 local down = nil            -- { pos, winId, winFrame }
 local target = nil          -- { app, win } captured when the button appears
@@ -107,14 +97,46 @@ local function showButton(p)
   startFade(3)
 end
 
-local function hasSelection(app)
-  if ALWAYS_SHOW[app:bundleID() or ""] then return true end
-  local ok, sel = pcall(function()
-    local el = hs.axuielement.systemWideElement():attributeValue("AXFocusedUIElement")
-    return el and el:attributeValue("AXSelectedText")
+-- Chrome and Electron apps (Slack, Claude, WhatsApp…) only report selected text to other apps
+-- after their accessibility mode is switched on. Do that once per app.
+local axEnabled = {}
+local function enableAX(app)
+  local pid = app:pid()
+  if axEnabled[pid] then return end
+  axEnabled[pid] = true
+  pcall(function()
+    local axApp = hs.axuielement.applicationElement(app)
+    axApp:setAttributeValue("AXManualAccessibility", true)          -- Electron + Chromium
+    local bid = app:bundleID() or ""
+    if bid:find("Chrome") or bid:find("Browser") or bid:find("edgemac") then
+      axApp:setAttributeValue("AXEnhancedUserInterface", true)      -- Chromium browsers
+    end
   end)
-  if ok and type(sel) == "string" then return sel:gsub("%s", "") ~= "" end
-  return true   -- app doesn't tell us; show the button anyway (it fades quickly)
+end
+M.enableAX = enableAX
+
+-- Is there really some selected text? (Only then is the ✨ button shown.)
+local function hasSelection(app)
+  enableAX(app)
+  local ok, sel = pcall(function()
+    local axApp = hs.axuielement.applicationElement(app)
+    local el = axApp:attributeValue("AXFocusedUIElement")
+    if not el then return nil end
+    local s = el:attributeValue("AXSelectedText")
+    if s == nil or s == "" then
+      -- web pages: the selection can live on the page itself rather than the focused field
+      local parent = el
+      for _ = 1, 6 do
+        parent = parent and parent:attributeValue("AXParent")
+        if not parent then break end
+        if parent:attributeValue("AXRole") == "AXWebArea" then s = parent:attributeValue("AXSelectedText"); break end
+      end
+    end
+    return s
+  end)
+  local result = ok and type(sel) == "string" and sel:gsub("%s", "") ~= ""
+  if M.log then M.log("✨ check " .. (app:name() or "?") .. ": " .. (ok and (type(sel) == "string" and (#sel .. " chars") or tostring(sel)) or "error") .. " → " .. (result and "show" or "skip")) end
+  return result
 end
 
 local function maybeShow(p, d)
