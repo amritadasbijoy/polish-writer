@@ -1,27 +1,47 @@
 -- Polish Writer — proofread and rewrite text in any Mac app, with your own AI API key.
--- Loaded from ~/.hammerspoon/init.lua with:   require("polish")
+-- Two ways to run it:
+--   • as the standalone "Polish Writer.app" (see app/ and scripts/build-dmg.sh), or
+--   • inside Hammerspoon: put this folder in ~/.hammerspoon/polish and add  require("polish")  to init.lua
 -- https://github.com/amritadasbijoy/polish-writer
 -- Made by Amrita Chandra Das — https://amrita.bd · https://videocutstudio.com · https://www.linkedin.com/in/amritabijoy/
 
-local POLISH_DIR = hs.configdir .. "/polish"
+-- Where the program files live, and where personal files (log, optional config.lua) go.
+-- The standalone app sets these before loading; inside Hammerspoon both are ~/.hammerspoon/polish.
+POLISH_DIR = POLISH_DIR or (hs.configdir .. "/polish")
+POLISH_DATA = POLISH_DATA or POLISH_DIR
+local BUNDLED = POLISH_BUNDLED == true
+
+if BUNDLED then
+  -- hide everything that belongs to Hammerspoon itself
+  pcall(hs.menuIcon, false)
+  pcall(hs.automaticallyCheckForUpdates, false)
+  pcall(hs.uploadCrashData, false)
+  pcall(hs.openConsoleOnDockClick, false)
+  pcall(hs.closePreferences)
+end
 
 -- ---------- settings ----------
 local function loadConfig()
-  local path = POLISH_DIR .. "/config.lua"
-  if not hs.fs.attributes(path) then path = POLISH_DIR .. "/config.example.lua" end
+  local path
+  for _, p in ipairs({ POLISH_DATA .. "/config.lua", POLISH_DIR .. "/config.lua", POLISH_DIR .. "/config.example.lua" }) do
+    if hs.fs.attributes(p) then path = p; break end
+  end
   local ok, cfg = pcall(dofile, path)
   if not ok then hs.alert.show("Polish Writer: config.lua has an error\n" .. tostring(cfg), 6); return {} end
   return cfg
 end
 
-local cfg = loadConfig()
+local settings = require("polish.settings")
+local cfg = settings.apply(loadConfig())     -- values saved in the Settings window win
+settings.cfg = cfg
 if cfg.startAtLogin ~= false then hs.autoLaunch(true) end
 if cfg.hideDockIcon ~= false then hs.dockIcon(false) end
+hs.consoleOnTop(false)
 
 -- keep the small troubleshooting log from growing
 do
-  local attr = hs.fs.attributes(POLISH_DIR .. "/.log")
-  if attr and attr.size > 200000 then os.remove(POLISH_DIR .. "/.log") end
+  local attr = hs.fs.attributes(POLISH_DATA .. "/.log")
+  if attr and attr.size > 200000 then os.remove(POLISH_DATA .. "/.log") end
 end
 
 local api = require("polish.api")
@@ -64,14 +84,6 @@ local function hotkeyLabel()
   return s .. (hk.key == "space" and "Space" or hk.key:upper())
 end
 
-local function setKeyDialog()
-  hs.focus()
-  local btn, key = hs.dialog.textPrompt("API key", "Paste your API key. It's saved in your Mac's Keychain, never in a file.", "", "Save", "Cancel")
-  if btn == "Save" and key and key:gsub("%s", "") ~= "" then
-    if api.setKey((key:gsub("%s", ""))) then hs.alert.show("API key saved") else hs.alert.show("Couldn't save the key") end
-  end
-end
-
 local function testConnection()
   hs.alert.show("Testing connection…")
   api.context = nil
@@ -81,10 +93,14 @@ local function testConnection()
   end)
 end
 
-local function editSettings()
-  local path = POLISH_DIR .. "/config.lua"
-  if not hs.fs.attributes(path) then hs.execute("cp '" .. POLISH_DIR .. "/config.example.lua' '" .. path .. "'") end
+-- advanced: the full config file (ignore list, excluded apps, hotkey…)
+local function editConfigFile()
+  local path = POLISH_DATA .. "/config.lua"
+  if not hs.fs.attributes(path) then
+    hs.execute("mkdir -p '" .. POLISH_DATA .. "' && cp '" .. POLISH_DIR .. "/config.example.lua' '" .. path .. "'")
+  end
   hs.execute("open -t '" .. path .. "'")
+  hs.alert.show("Save the file, then choose ✍︎ → Reload", 3)
 end
 
 local function addIgnoreDialog()
@@ -125,7 +141,7 @@ local function buildMenu()
   end
   if #userWords == 0 then table.insert(ign, { title = "Words you add will show here", disabled = true }) end
   table.insert(ign, { title = "-" })
-  table.insert(ign, { title = "Built-in list: edit in settings…", fn = editSettings })
+  table.insert(ign, { title = "Built-in list: edit config file…", fn = editConfigFile })
 
   return {
     { title = paused() and "Polish Writer is paused" or ("Select text, then press " .. hotkeyLabel() .. " or click ✨"), disabled = true },
@@ -146,23 +162,25 @@ local function buildMenu()
         { title = "LinkedIn — Amrita Chandra Das",   fn = function() hs.urlevent.openURL("https://www.linkedin.com/in/amritabijoy/") end },
         { title = "-" },
         { title = "GitHub — updates, help and source", fn = function() hs.urlevent.openURL("https://github.com/amritadasbijoy/polish-writer") end },
+        { title = "-" },
+        { title = "Built on Hammerspoon (MIT license) — hammerspoon.org", fn = function() hs.urlevent.openURL("https://www.hammerspoon.org") end },
     } },
     { title = "-" },
-    { title = "Set API key…",    fn = setKeyDialog },
-    { title = "Edit settings…",  fn = editSettings },
-    { title = "Test connection", fn = testConnection },
-    { title = "Reload",          fn = hs.reload },
+    { title = "Settings…",              fn = settings.show },
+    { title = "Test connection",        fn = testConnection },
+    { title = "Advanced: edit config file…", fn = editConfigFile },
+    { title = "Reload",                 fn = hs.reload },
+    BUNDLED and { title = "Quit Polish Writer", fn = function() hs.application.applicationForPID(hs.processInfo.processID):kill() end } or nil,
   }
 end
 menu:setMenu(buildMenu)
 
 panel.prebuild()
 
--- first run: nudge the user to finish setup
-if not api.getKey() and not (cfg.baseURL or ""):find("localhost") then
-  hs.alert.show("Polish Writer: click ✍︎ in the menu bar → Set API key…", 5)
-elseif (cfg.model or "") == "" then
-  hs.alert.show("Polish Writer: click ✍︎ → Edit settings… and set your model", 5)
+-- first run (or setup not finished): open the Settings window
+local needsKey = not api.getKey() and not (cfg.baseURL or ""):find("localhost")
+if needsKey or (cfg.model or "") == "" or not hs.accessibilityState(false) then
+  hs.timer.doAfter(0.8, settings.show)
 else
   hs.alert.show(paused() and "Polish Writer is paused" or ("Polish Writer ready — select text, press " .. hotkeyLabel()), 2)
 end

@@ -31,7 +31,7 @@ end
 
 -- Paste plain text into `app` (an hs.application), replacing its selection.
 local function log(s)
-  local f = io.open(hs.configdir .. "/polish/.log", "a")
+  local f = io.open((POLISH_DATA or POLISH_DIR or (hs.configdir .. "/polish")) .. "/.log", "a")
   if f then f:write(os.date("%H:%M:%S ") .. s .. "\n"); f:close() end
 end
 M.log = log

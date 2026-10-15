@@ -3,3 +3,4 @@ polish/config.lua
 polish/.log
 polish/.status
 .DS_Store
+dist/

@@ -1,0 +1,104 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+:root{--bg:#ffffff;--soft:#f4f4f2;--line:#dcdbd5;--text:#1f1f1d;--muted:#73726c;--accent:#2f6fd0;--accent-bg:#e6effb;--ok:#2f6a10;--ok-bg:#e3f2d9;--bad:#b23a3a;--bad-bg:#fbe9e9}
+@media (prefers-color-scheme:dark){:root{--bg:#232322;--soft:#2c2c2a;--line:#3d3d3a;--text:#ecebe6;--muted:#a3a29c;--accent:#7fb0f0;--accent-bg:#1e3350;--ok:#b7e08f;--ok-bg:#25401a;--bad:#f09595;--bad-bg:#4a1f1f}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:13.5px/1.5 -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif}
+.wrap{padding:16px 22px 14px}
+h1{font-size:17px;font-weight:600;margin:0 0 2px}
+.sub{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+.step{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px}
+.num{flex:none;width:22px;height:22px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.body{flex:1;min-width:0}
+.ttl{font-weight:600;margin-bottom:4px}
+label{display:block;font-size:12px;color:var(--muted);margin:6px 0 3px}
+input,select{width:100%;font:inherit;font-size:13px;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:6px 9px;outline:none}
+input:focus,select:focus{border-color:var(--accent)}
+.row{display:flex;gap:8px}.row>div{flex:1;min-width:0}
+.hint{font-size:11.5px;color:var(--muted);margin-top:3px}
+.hint a,.links a{color:var(--accent);text-decoration:none;cursor:pointer}
+.pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.bad{background:var(--bad-bg);color:var(--bad)}
+button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:7px;padding:5px 12px;cursor:pointer}
+button.primary{background:var(--accent);border-color:transparent;color:#fff}
+@media (prefers-color-scheme:dark){button.primary{color:#10223a}}
+.foot{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+#status{flex:1;font-size:12.5px}
+#status.ok{color:var(--ok)}#status.bad{color:var(--bad)}
+.links{margin-top:12px;font-size:11.5px;color:var(--muted);text-align:center}
+</style></head>
+<body><div class="wrap">
+<h1>✍︎ Polish Writer</h1>
+<p class="sub">Proofread and rewrite in any app. Three quick steps and you're ready.</p>
+
+<div class="step"><div class="num">1</div><div class="body">
+  <div class="ttl">Allow Accessibility <span id="ax" class="pill bad">Not allowed yet</span></div>
+  <div class="hint">Lets Polish Writer copy your selected text and paste the result back. <a id="axbtn">Open Accessibility settings</a> and turn on <b>Polish Writer</b>.</div>
+</div></div>
+
+<div class="step"><div class="num">2</div><div class="body">
+  <div class="ttl">Choose your AI provider</div>
+  <select id="preset"></select>
+  <div class="row">
+    <div><label>Base URL</label><input id="baseURL" spellcheck="false"></div>
+    <div><label>Model</label><input id="model" spellcheck="false"></div>
+  </div>
+  <div class="hint" id="presetHint">Any OpenAI-compatible API works. Copy the exact model ID from your provider's dashboard.</div>
+</div></div>
+
+<div class="step"><div class="num">3</div><div class="body">
+  <div class="ttl">Paste your API key</div>
+  <input id="key" type="password" spellcheck="false" autocomplete="off">
+  <div class="hint">Saved in your Mac's Keychain — never in a file, never sent anywhere except your provider.</div>
+</div></div>
+
+<div class="step"><div class="num">✦</div><div class="body">
+  <div class="ttl">About you <span style="font-weight:400;color:var(--muted)">(optional)</span></div>
+  <div class="row">
+    <div style="flex:3"><input id="aboutMe" placeholder="a freelancer who writes to clients on chat, email and LinkedIn"></div>
+    <div style="flex:1"><select id="spelling"><option value="US">US English</option><option value="UK">UK English</option></select></div>
+  </div>
+  <div class="hint">One line about who you are and who you write to — makes rewrites sound like you.</div>
+</div></div>
+
+<div class="foot">
+  <span id="status"></span>
+  <button id="test">Test connection</button>
+  <button id="save" class="primary">Save</button>
+</div>
+<div class="links">Made by Amrita Chandra Das · <a data-url="https://amrita.bd">amrita.bd</a> · <a data-url="https://videocutstudio.com">VideoCutStudio</a> · <a data-url="https://www.linkedin.com/in/amritabijoy/">LinkedIn</a> · <a data-url="https://github.com/amritadasbijoy/polish-writer">GitHub</a></div>
+</div>
+<script>
+const PRESETS=[
+  ["OpenAI","https://api.openai.com/v1","gpt-4o-mini","platform.openai.com/api-keys"],
+  ["DeepSeek","https://api.deepseek.com/v1","deepseek-chat","platform.deepseek.com"],
+  ["OpenRouter","https://openrouter.ai/api/v1","deepseek/deepseek-chat","openrouter.ai/keys"],
+  ["Groq","https://api.groq.com/openai/v1","llama-3.3-70b-versatile","console.groq.com/keys"],
+  ["River","https://api.river.ai/v1","deepseek-ai/DeepSeek-V4.1-Flash","console.river.ai/keys"],
+  ["Ollama (local, no key)","http://localhost:11434/v1","llama3.1","ollama.com"],
+  ["Custom…","","",""],
+];
+const $=id=>document.getElementById(id);
+const send=(action,data={})=>window.webkit.messageHandlers.settings.postMessage(Object.assign({action},data));
+$("preset").innerHTML=PRESETS.map((p,i)=>`<option value="${i}">${p[0]}</option>`).join("");
+function matchPreset(){ const u=$("baseURL").value.trim(); const i=PRESETS.findIndex(p=>p[1]&&p[1]===u); $("preset").value=i>=0?i:PRESETS.length-1; showHint(); }
+function showHint(){ const p=PRESETS[+$("preset").value]; $("presetHint").innerHTML=p[3]?`Get a key at <a data-url="https://${p[3]}">${p[3]}</a>. Model names change — check your provider's dashboard.`:"Any OpenAI-compatible API works. Copy the exact model ID from your provider's dashboard."; bindLinks(); }
+$("preset").onchange=()=>{ const p=PRESETS[+$("preset").value]; if(p[1]){ $("baseURL").value=p[1]; $("model").value=p[2]; } showHint(); };
+$("baseURL").oninput=matchPreset;
+function vals(){ return {baseURL:$("baseURL").value.trim(),model:$("model").value.trim(),key:$("key").value.trim(),aboutMe:$("aboutMe").value.trim(),spelling:$("spelling").value}; }
+function status(t,cls){ const s=$("status"); s.textContent=t; s.className=cls||""; }
+$("test").onclick=()=>{ const v=vals(); if(!v.baseURL||!v.model) return status("Fill in Base URL and Model first.","bad"); status("Testing…"); send("test",v); };
+$("save").onclick=()=>{ const v=vals(); if(!v.baseURL||!v.model) return status("Fill in Base URL and Model first.","bad"); send("save",v); };
+$("axbtn").onclick=()=>send("openAX");
+function bindLinks(){ document.querySelectorAll("a[data-url]").forEach(a=>a.onclick=()=>send("open",{url:a.dataset.url})); }
+bindLinks();
+window.Settings={
+  load(d){ $("baseURL").value=d.baseURL||""; $("model").value=d.model||""; $("aboutMe").value=d.aboutMe||""; $("spelling").value=d.spelling||"US";
+    $("key").placeholder=d.hasKey?"•••••••••••• saved — paste a new key to replace it":"Paste your API key here"; $("key").value=""; matchPreset(); this.ax(d.ax); status(""); },
+  ax(ok){ const a=$("ax"); a.textContent=ok?"✓ Allowed":"Not allowed yet"; a.className="pill "+(ok?"ok":"bad"); },
+  testResult(d){ status(d.ok?"✓ Connected — it works!":d.msg, d.ok?"ok":"bad"); },
+  saved(d){ status(d.ok?"✓ Saved":d.msg, d.ok?"ok":"bad"); },
+};
+send("ready");
+</script></body></html>

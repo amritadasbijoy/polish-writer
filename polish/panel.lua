@@ -108,7 +108,7 @@ local function build()
     :deleteOnClose(false)
     :shadow(true)
     :windowCallback(function(action) if action == "closing" then state.reqId = state.reqId + 1 end end)
-  local f = io.open(hs.configdir .. "/polish/panel.html")
+  local f = io.open((POLISH_DIR or (hs.configdir .. "/polish")) .. "/panel.html")
   wv:html(f:read("*a")); f:close()
 end
 

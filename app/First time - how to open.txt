@@ -1,0 +1,24 @@
+POLISH WRITER — HOW TO INSTALL
+
+1. Drag "Polish Writer" onto the "Applications" folder in this window.
+
+2. Open your Applications folder, RIGHT-CLICK "Polish Writer" and choose "Open",
+   then click "Open" again.
+   (You only need to do this the first time. macOS shows a warning because this
+   free app isn't registered with Apple — it is safe and open source:
+   https://github.com/amritadasbijoy/polish-writer)
+
+   If macOS still says it can't be opened: go to
+   System Settings → Privacy & Security, scroll down, and click "Open Anyway".
+
+3. The Settings window opens. Follow the 3 steps:
+   • Allow Accessibility (turn on "Polish Writer")
+   • Choose your AI provider and model
+   • Paste your API key → Test connection → Save
+
+4. Select text in any app and press ⌥ Space (Option + Space),
+   or click the ✨ button that appears after you select text.
+
+Find Polish Writer any time from the ✍︎ icon in your menu bar.
+
+Made by Amrita Chandra Das — https://amrita.bd · https://videocutstudio.com

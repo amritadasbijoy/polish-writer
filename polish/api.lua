@@ -64,7 +64,7 @@ M.temperature = { proofread = 0.1, rewrite = 0.6, shorter = 0.4, friendly = 0.6,
 -- ---------- Core call ----------
 -- callback(ok, textOrError)
 function M.chat(cfg, systemPrompt, userText, temperature, callback)
-  local key = M.getKey()
+  local key = M.overrideKey or M.getKey()   -- overrideKey: used by Settings → Test before saving
   local isLocal = (cfg.baseURL or ""):find("localhost") or (cfg.baseURL or ""):find("127%.0%.0%.1")
   if not key and not isLocal then return callback(false, "No API key yet. Click ✍︎ in the menu bar > Set API key…") end
   if (cfg.baseURL or "") == "" or (cfg.model or "") == "" then
