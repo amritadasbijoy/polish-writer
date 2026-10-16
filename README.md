@@ -109,6 +109,7 @@ After editing, choose **✍︎ → Reload**.
 
 ## Troubleshooting
 
+- **After updating the app, nothing works** — macOS resets Accessibility for each new version of a free (unsigned) app. Open System Settings → Privacy & Security → Accessibility, select **Polish Writer**, click **−**, then **+** and add it again from Applications. The ✍︎ menu shows **⚠︎ Allow Accessibility…** until this is done.
 - **Nothing happens on ⌥ Space** — check Accessibility is on for Hammerspoon. Another app may use ⌥ Space (ChatGPT, Raycast, Alfred, Claude); change `hotkey` in settings.
 - **"Select some text first"** — the app didn't copy the selection. Click into the text and select again.
 - **Text not replaced** — some apps (or read-only documents) don't accept paste. Use **Copy** instead.

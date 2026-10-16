@@ -143,7 +143,7 @@ local function buildMenu()
   table.insert(ign, { title = "-" })
   table.insert(ign, { title = "Built-in list: edit config file…", fn = editConfigFile })
 
-  return {
+  local items = {
     { title = paused() and "Polish Writer is paused" or ("Select text, then press " .. hotkeyLabel() .. " or click ✨"), disabled = true },
     { title = "-" },
     { title = "Pause", checked = paused(), fn = function() hs.settings.set("polish.paused", not paused()); applyPause(); setIcon() end },
@@ -172,15 +172,26 @@ local function buildMenu()
     { title = "Reload",                 fn = hs.reload },
     BUNDLED and { title = "Quit Polish Writer", fn = function() hs.application.applicationForPID(hs.processInfo.processID):kill() end } or nil,
   }
+  if not hs.accessibilityState(false) then
+    table.insert(items, 1, { title = "⚠︎ Allow Accessibility…  (needed to read and replace text)", fn = function()
+      hs.accessibilityState(true)
+      hs.execute("open 'x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility'")
+    end })
+    table.insert(items, 2, { title = "-" })
+  end
+  return items
 end
 menu:setMenu(buildMenu)
 
 panel.prebuild()
 
--- first run (or setup not finished): open the Settings window
+-- Open Settings by itself ONLY when the provider/key isn't set up yet.
+-- (Missing Accessibility gets a short notice + a menu item instead, so the window never keeps coming back.)
 local needsKey = not api.getKey() and not (cfg.baseURL or ""):find("localhost")
-if needsKey or (cfg.model or "") == "" or not hs.accessibilityState(false) then
+if needsKey or (cfg.model or "") == "" then
   hs.timer.doAfter(0.8, settings.show)
+elseif not hs.accessibilityState(false) then
+  hs.alert.show("Polish Writer needs Accessibility — click ✍︎ → ⚠︎ Allow Accessibility…", 5)
 else
   hs.alert.show(paused() and "Polish Writer is paused" or ("Polish Writer ready — select text, press " .. hotkeyLabel()), 2)
 end
