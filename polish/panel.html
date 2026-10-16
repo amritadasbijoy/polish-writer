@@ -79,7 +79,8 @@ button:disabled{opacity:.45;cursor:default}
   <button id="replace" class="primary">Replace ⏎</button>
 </div>
 <script>
-const MODES=[["proofread","Fix mistakes"],["rewrite","Rewrite"],["shorter","Shorter"],["friendly","Friendlier"],["translate","To English"]];
+const MODES=[["proofread","Fix mistakes"],["rewrite","Rewrite"],["shorter","Shorter"],["friendly","Friendlier"],["translate","To English"],["reply","✉︎ Reply"],["comment","💬 Comment"]];
+const WRITE={reply:1,comment:1};   // modes that write NEW text: result is copied, never pasted over the selection
 const S={mode:"proofread",original:"",result:"",busy:false,clean:false};
 const $=id=>document.getElementById(id);
 const send=(action,data={})=>window.webkit.messageHandlers.polish.postMessage(Object.assign({action},data));
@@ -108,7 +109,7 @@ function renderOptions(){
     el.onclick=()=>pick(+el.dataset.i);
     el.ondblclick=()=>{pick(+el.dataset.i);$("replace").click();};
   });
-  $("lbl").textContent="Pick one — press 1, 2 or 3"; $("toggle").textContent="";
+  $("lbl").textContent=WRITE[S.mode]?`Pick a ${S.mode} — press 1, 2 or 3, then Enter to copy`:"Pick one — press 1, 2 or 3"; $("toggle").textContent="";
   $("status").textContent=`${S.options.length} options`;
 }
 function pick(i){ if(!S.options||i<0||i>=S.options.length)return; S.pick=i; S.result=S.options[i]; renderOptions(); }
@@ -188,13 +189,18 @@ function render(){
 function setBusy(b){ S.busy=b; ["retry","copy","replace"].forEach(id=>$(id).disabled=b); }
 
 function run(mode){
-  if(mode) S.mode=mode; chips(); setBusy(true); if(typeof hidePart==="function") hidePart();
+  if(mode) S.mode=mode; chips(); setBusy(true); if(typeof hidePart==="function") hidePart(); setPrimary();
   S.check=null; if(typeof closeCard==="function") closeCard();
-  const out=$("out"); out.className="loading"; out.textContent=S.mini?"Checking…":"Working…"; $("status").textContent="";
+  const out=$("out"); out.className="loading"; out.textContent=S.mini?"Checking…":(WRITE[S.mode]?"Writing…":"Working…"); $("status").textContent="";
   if(S.mini){ $("lbl").textContent="Fix mistakes"; $("toggle").textContent=""; }
   S.t0=Date.now(); send("run",{mode:S.mode,extra:$("extra").value}); fit();
 }
-function setMini(on){ S.mini=on; document.body.classList.toggle("mini",on); $("replace").textContent=on?"Apply ⏎":"Replace ⏎"; }
+function setMini(on){ S.mini=on; document.body.classList.toggle("mini",on); setPrimary(); }
+function setPrimary(){ const w=WRITE[S.mode];
+  $("replace").textContent=w?"Copy ⏎":(S.mini?"Apply ⏎":"Replace ⏎");
+  $("copy").style.display=w?"none":"";
+  $("extra").placeholder=w?(S.mode==="reply"?"What do you want to say? (optional) e.g. agree, delivery by Friday, ask for the logo file — then Return":"What should the comment say? (optional) e.g. thank them, mention the color fix — then Return")
+    :"Custom instruction (optional), then press Return — e.g. make it sound confident"; }
 $("more").onclick=()=>{ setMini(false); send("full"); setTimeout(render,60); };
 
 window.Polish={
@@ -264,7 +270,7 @@ Polish.partResult=d=>{
 $("toggle").onclick=()=>{ if(S.check){ acceptAll(); return; } S.clean=!S.clean; render(); };
 $("retry").onclick=()=>run();
 $("copy").onclick=()=>!S.busy&&S.result&&send("copy",{text:S.result,mode:S.mode});
-$("replace").onclick=()=>!S.busy&&S.result&&send("replace",{text:S.result,mode:S.mode});
+$("replace").onclick=()=>!S.busy&&S.result&&send(WRITE[S.mode]?"copy":"replace",{text:S.result,mode:S.mode});
 $("extra").addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();e.stopPropagation();run();} });
 document.addEventListener("keydown",e=>{
   if(S.check&&document.activeElement!==$("extra")){
@@ -288,7 +294,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Enter"&&P.alts){e.preventDefault();return;}   // still working on the part
   if(e.key==="Escape"){e.preventDefault();send("close");}
   else if(e.key==="Enter"&&document.activeElement!==$("extra")){e.preventDefault();$("replace").click();}
-  else if(e.metaKey&&/^[1-5]$/.test(e.key)){e.preventDefault();run(MODES[+e.key-1][0]);}
+  else if(e.metaKey&&/^[1-7]$/.test(e.key)){e.preventDefault();run(MODES[+e.key-1][0]);}
   else if(S.options&&document.activeElement!==$("extra")){
     if(/^[1-9]$/.test(e.key)){e.preventDefault();pick(+e.key-1);}
     else if(e.key==="ArrowDown"){e.preventDefault();pick(Math.min(S.pick+1,S.options.length-1));}

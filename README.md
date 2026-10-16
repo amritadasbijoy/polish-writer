@@ -14,6 +14,7 @@ Select text anywhere (Chrome, Slack, Mail, Word, Notes, WhatsApp, the Claude app
 - **Rewrite** — simple, clear, professional wording. For a short line you get **3 versions** to pick from.
 - **Shorter** and **Friendlier** — one click each.
 - **Any language → English** — write in your own language, get natural English.
+- **Write a reply / Write a comment** — select a client's message (or a post, review or dashboard comment) and get 3 ready replies in your voice. Tell it what you want to say ("agree, delivery Friday") or leave it blank. The reply is copied so you can paste it in the reply box — the original message is never changed.
 - **Rewrite this part** — in a long result, highlight one sentence and rewrite just that.
 - **Knows where you're writing** — short replies in chat apps (Slack, WhatsApp, Upwork, Fiverr…), greeting and sign-off kept in email, a bit warmer on LinkedIn, formatting kept in documents.
 - **Ignore list** — names and brand words are never flagged.
@@ -78,11 +79,11 @@ Model names change often — copy the exact model ID from your provider's dashbo
 | Do this | To get |
 |---|---|
 | Select text → **⌥ Space** | Fix mistakes popup |
-| Select text with the mouse → click **✨** | Menu: Fix mistakes · Rewrite · Shorter · Friendlier · To English |
+| Select text with the mouse → click **✨** | Menu: Fix mistakes · Rewrite · Shorter · Friendlier · To English · Write a reply · Write a comment |
 | In the popup: **Enter** | Accept the current fix (then **Enter** again on *Apply* to put the text back) |
 | **Tab** / **Delete** | Next mistake / dismiss this one |
 | **More ▸** | Open the full panel with all modes and a custom instruction box |
-| In the full panel: **⌘1 – ⌘5** | Switch mode |
+| In the full panel: **⌘1 – ⌘7** | Switch mode |
 | **1 / 2 / 3** | Pick one of the 3 rewrite options |
 | **Esc** | Close without changing anything |
 

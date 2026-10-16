@@ -10,6 +10,8 @@ local ITEMS = {
   { "shorter",   "Shorter" },
   { "friendly",  "Friendlier" },
   { "translate", "Any language → English" },
+  { "reply",     "✉︎ Write a reply" },
+  { "comment",   "💬 Write a comment" },
 }
 local canvas, fadeTimer, tap
 local down = nil            -- { pos, winId, winFrame }

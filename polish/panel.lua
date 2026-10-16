@@ -27,8 +27,8 @@ local function onMessage(msg)
     state.reqId = state.reqId + 1
     local id = state.reqId
     api.context = state.ctx and state.ctx.prompt or nil
-    local VARIANT_MODES = { rewrite = true, shorter = true, friendly = true }
-    local short = #state.text <= 300 and not state.text:find("\n")
+    local VARIANT_MODES = { rewrite = true, shorter = true, friendly = true, reply = true, comment = true }
+    local short = (#state.text <= 300 and not state.text:find("\n")) or api.writeModes[b.mode]   -- replies/comments: always 3 options
     if b.mode == "proofread" and (b.extra or ""):gsub("%s", "") == "" then
       api.check(M.cfg, state.text, function(ok, out)
         if id ~= state.reqId then return end
@@ -85,7 +85,11 @@ local function onMessage(msg)
     store.addHistory({ app = state.app and state.app:name(), mode = b.mode, before = state.text, after = b.text })
     hs.pasteboard.setContents(b.text)
     hide(true)
-    hs.alert.show("Copied", 1)
+    if api.writeModes[b.mode] then
+      hs.alert.show("Copied — click in the reply box and press ⌘V", 2.5)
+    else
+      hs.alert.show("Copied", 1)
+    end
   elseif b.action == "close" then
     state.reqId = state.reqId + 1
     hide(true)

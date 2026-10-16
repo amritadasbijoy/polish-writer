@@ -115,7 +115,7 @@ local function short(s, n)
   return s
 end
 
-local MODE_NAMES = { proofread = "Fixed", rewrite = "Rewrite", shorter = "Shorter", friendly = "Friendlier", translate = "To English" }
+local MODE_NAMES = { proofread = "Fixed", rewrite = "Rewrite", shorter = "Shorter", friendly = "Friendlier", translate = "To English", reply = "Reply", comment = "Comment" }
 local SAMPLE = "hi john, i have went through you're document and its ready for review. let me know if any changes need."
 
 local function buildMenu()

@@ -57,9 +57,32 @@ Fix all grammar and spelling mistakes.
 Write natural, simple, professional English, the way a native speaker would write it.
 Do not translate word for word. If the text is already English, just improve it the same way.
 ]] .. BASE_RULES,
+
+  -- The selected text is something the writer RECEIVED; we write a NEW reply to it.
+  reply = [[You write replies for {{WRITER}}.
+The user's text is a message the writer RECEIVED (usually from a client). Write the writer's reply to it.
+- Simple, clear, professional English; friendly and confident, not stiff. Use {{SPELLING}} English spelling.
+- Answer every question and respond to every request in the message. Keep it as short as the message allows.
+- Never invent facts, prices, dates, deadlines, links, or promises. Where the writer must fill something in,
+  use a short placeholder in square brackets, e.g. [delivery date] or [price].
+- Match the channel: a chat message needs no formal greeting or sign-off; an email keeps a greeting and sign-off.
+- Write only the reply itself — no quotes, labels, or explanations.]],
+
+  -- The selected text is a post, update, or comment; we write a NEW comment on it.
+  comment = [[You write comments for {{WRITER}}.
+The user's text is a post, update, or comment (for example on LinkedIn, Facebook, YouTube, a blog, or a project
+dashboard / review tool). Write a comment from the writer replying to it.
+- 1 to 3 sentences, genuine and specific to what the post actually says — never generic ("Great post!").
+- Simple, warm, professional English. Use {{SPELLING}} English spelling. No hashtags. At most one emoji, only if natural.
+- If it is feedback or a question about the writer's work, acknowledge it and say clearly what the writer will do.
+- Never invent facts, numbers, or promises; use [placeholders] if needed.
+- Write only the comment itself — no quotes, labels, or explanations.]],
 }
 
-M.temperature = { proofread = 0.1, rewrite = 0.6, shorter = 0.4, friendly = 0.6, translate = 0.3 }
+M.temperature = { proofread = 0.1, rewrite = 0.6, shorter = 0.4, friendly = 0.6, translate = 0.3, reply = 0.6, comment = 0.7 }
+
+-- Modes that write NEW text (the selection stays as it is; the result is copied, not pasted over it)
+M.writeModes = { reply = true, comment = true }
 
 -- ---------- Core call ----------
 -- callback(ok, textOrError)
